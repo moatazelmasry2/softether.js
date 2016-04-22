@@ -115,6 +115,6 @@ vpncmd.prototype.listSession = function () {
     return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionList", "VERTICAL")
 }
 
-vpncmd.prototype.gettSession = function (sessionName) {
+vpncmd.prototype.getSession = function (sessionName) {
     return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
 }
