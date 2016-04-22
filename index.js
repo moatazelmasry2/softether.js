@@ -88,7 +88,6 @@ function csvToJsonHorizontal(csv) {
 function executeCommandCsv(command, direction) {
     return exec(command)
         .then(function (csv) {
-            console.log(csv)
             switch (direction) {
                 case "HORIZONTAL":
                     return csvToJsonHorizontal(csv)
