@@ -117,4 +117,14 @@ VPNCMD.prototype.getSession = function (sessionName) {
     return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
 }
 
+VPNCMD.prototype.setUserRadius = function(username) {
+    var command = this.vpnBasicCommand + " /CMD UserRadiusSet " + username + " /ALIAS:" + username
+    return exec(command)
+        .then(function(){
+            console.log("yayy")
+        }).catch(function () {
+            console.log("oh")
+        })
+}
+
 module.exports = VPNCMD
