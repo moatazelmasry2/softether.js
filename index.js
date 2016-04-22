@@ -3,9 +3,7 @@ var exec                    = Promise.promisify(require('child_process').exec)
 var _                       = require('lodash')
 
 
-var VPNCMD = module.exports = vpncmd
-
-function vpncmd (options) {
+var VPNCMD = function(options) {
     this.options = options
     this.softetherPath = this.parseOptionsField(options, 'softetherPath')
     this.softetherURL = this.parseOptionsField(options, 'softetherURL')
@@ -103,7 +101,8 @@ function executeCommandCsv(command, direction) {
         })
 }
 
-vpncmd.prototype.parseOptionsField = function(options, fieldName) {
+
+VPNCMD.prototype.parseOptionsField = function(options, fieldName) {
     if (!options[fieldName]) {
         throw new Error(fieldName + "is mandatory and must be provided")
     }
@@ -111,10 +110,12 @@ vpncmd.prototype.parseOptionsField = function(options, fieldName) {
 }
 
 
-vpncmd.prototype.listSession = function () {
+VPNCMD.prototype.listSession = function () {
     return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionList", "VERTICAL")
 }
 
-vpncmd.prototype.getSession = function (sessionName) {
+VPNCMD.prototype.getSession = function (sessionName) {
     return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
 }
+
+module.exports = VPNCMD
