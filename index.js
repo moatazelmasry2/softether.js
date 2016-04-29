@@ -120,11 +120,10 @@ VPNCMD.prototype.getSession = function (sessionName) {
 VPNCMD.prototype.setUserRadius = function(username) {
     var command = this.vpnBasicCommand + " /CMD UserRadiusSet " + username + " /ALIAS:" + username
     return exec(command)
-        .then(function(){
-            console.log("yayy")
-        }).catch(function () {
-            console.log("oh")
-        })
+}
+
+VPNCMD.prototype.disconnectSession = function(sessionName) {
+    return exec(his.vpnBasicCommand + " /CMD SessionDisconnect " + sessionName)
 }
 
 module.exports = VPNCMD
