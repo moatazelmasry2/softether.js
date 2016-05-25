@@ -1,3 +1,5 @@
-sandbox
+sandbox*
 sandbox.js
-
+.idea
+.npmignore
+softether*.tgz

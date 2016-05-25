@@ -2,5 +2,6 @@
 .env
 node_modules/
 sandbox.js
+softether*.tgz
 
 
