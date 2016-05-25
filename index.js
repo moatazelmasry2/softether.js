@@ -4,14 +4,18 @@ var _                       = require('lodash')
 
 
 var VPNCMD = function(options) {
-    this.options = options
-    this.softetherPath = this.parseOptionsField(options, 'softetherPath')
-    this.softetherURL = this.parseOptionsField(options, 'softetherURL')
-    this.softetherPort = this.parseOptionsField(options, 'softetherPort')
-    this.softetherHub = this.parseOptionsField(options, 'softetherHub')
-    this.softetherPassword = this.parseOptionsField(options, 'softetherPassword')
-    this.vpnBasicCommand = this.softetherPath + " " + this.softetherURL + ":" + this.softetherPort + " /SERVER /HUB:" +
-            this.softetherHub + " /PASSWORD:" + this.softetherPassword
+    this.options = {}
+    this.options.softetherPath = this.parseOptionsField(options, 'softetherPath')
+    this.options.softetherURL = this.parseOptionsField(options, 'softetherURL')
+    this.options.softetherPort = this.parseOptionsField(options, 'softetherPort')
+    this.options.softetherHub = this.parseOptionsField(options, 'softetherHub')
+    this.options.softetherPassword = this.parseOptionsField(options, 'softetherPassword')
+}
+
+VPNCMD.prototype.getBasicCommand = function(options) {
+    var opts = _.assign({}, this.options, options)
+    return opts.softetherPath + " " + opts.softetherURL + ":" + opts.softetherPort + " /SERVER /HUB:" +
+        opts.softetherHub + " /PASSWORD:" + opts.softetherPassword
 }
 
 function extractQuotedFields(line) {
@@ -109,21 +113,21 @@ VPNCMD.prototype.parseOptionsField = function(options, fieldName) {
 }
 
 
-VPNCMD.prototype.listSession = function () {
-    return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionList", "VERTICAL")
+VPNCMD.prototype.listSession = function (options) {
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionList", "VERTICAL")
 }
 
-VPNCMD.prototype.getSession = function (sessionName) {
-    return executeCommandCsv(this.vpnBasicCommand + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
+VPNCMD.prototype.getSession = function (sessionName, options) {
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
 }
 
-VPNCMD.prototype.setUserRadius = function(username) {
-    var command = this.vpnBasicCommand + " /CMD UserRadiusSet " + username + " /ALIAS:" + username
+VPNCMD.prototype.setUserRadius = function(username, options) {
+    var command = this.getBasicCommand(options) + " /CMD UserRadiusSet " + username + " /ALIAS:" + username
     return exec(command)
 }
 
-VPNCMD.prototype.disconnectSession = function(sessionName) {
-    return exec(this.vpnBasicCommand + " /CMD SessionDisconnect " + sessionName)
+VPNCMD.prototype.disconnectSession = function(sessionName, options) {
+    return exec(this.getBasicCommand(options) + " /CMD SessionDisconnect " + sessionName)
 }
 
 module.exports = VPNCMD
