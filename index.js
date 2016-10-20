@@ -117,11 +117,11 @@ VPNCMD.prototype.listSession = function (options) {
     return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionList", "VERTICAL")
 }
 
-VPNCMD.prototype.getSession = function (sessionName, options) {
+VPNCMD.prototype.getSession = function (options, sessionName) {
     return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
 }
 
-VPNCMD.prototype.createUser = function(username, group, options) {
+VPNCMD.prototype.createUser = function(options, username, group) {
     var command = this.getBasicCommand(options) + " /CMD UserCreate " + username + " /GROUP:" + group +
         " /REALNAME:" + username +" /NOTE:\"\""
     return exec(command)
