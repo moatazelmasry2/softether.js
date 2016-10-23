@@ -13,15 +13,23 @@ var VPNCMD = function(options) {
 }
 
 VPNCMD.prototype.getBasicCommand = function(options) {
-    var opts = _.assign({}, this.options, options)
-    return opts.softetherPath + " " + opts.softetherURL + ":" + opts.softetherPort + " /SERVER /HUB:" +
-        opts.softetherHub + " /PASSWORD:" + opts.softetherPassword
+    try {
+        var opts = _.assign({}, this.options, options)
+        return opts.softetherPath + " " + opts.softetherURL + ":" + opts.softetherPort + " /SERVER /HUB:" +
+            opts.softetherHub + " /PASSWORD:" + opts.softetherPassword
+    } catch (e) {
+        console.error(e)
+    }
 }
 
+
+VPNCMD.HORIZONTAL = "HORIZONTAL"
+VPNCMD.VERTICAL = "VERTICAL"
 function extractQuotedFields(line) {
     var fields = []
     var open = false
     var str = ""
+    const isSecurityPolicy = false
     for (var i in line) {
         switch(line[i]) {
             case ",":
@@ -32,6 +40,8 @@ function extractQuotedFields(line) {
                 if (str.length > 0) {
                     fields.push(str)
                     str = ""
+                } else if ( (i > 0 && line[i-1] == ',' ) || i == 0) {
+                    fields.push("")
                 }
                 break;
             case "\"":
@@ -82,14 +92,23 @@ function csvToJsonVertical(csv) {
 function csvToJsonHorizontal(csv) {
     var json = {}
     var tokens = csv.split("\n")
+    let isSecurityPolicy = false
     for (var i = 1; i < tokens.length; i++) {
+        if (tokens[i].includes("Security Policy Set for this User") ) {
+            isSecurityPolicy = true
+        }
         vals = extractQuotedFields(tokens[i])
-        json[vals[0]] = vals[1]
+        if (isSecurityPolicy) {
+            json[vals[0]] = vals[2]
+        } else {
+            json[vals[0]] = vals[1]
+        }
     }
     return json
 }
 
 function executeCommandCsv(command, direction) {
+    //console.log("Executing command: " + command)
     return exec(command)
         .then(function (csv) {
             switch (direction) {
@@ -104,6 +123,10 @@ function executeCommandCsv(command, direction) {
         })
 }
 
+function executeCommand(command) {
+    console.log("executing command: " + command)
+    return exec(command)
+}
 
 VPNCMD.prototype.parseOptionsField = function(options, fieldName) {
     if (!options[fieldName]) {
@@ -114,26 +137,63 @@ VPNCMD.prototype.parseOptionsField = function(options, fieldName) {
 
 
 VPNCMD.prototype.listSession = function (options) {
-    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionList", "VERTICAL")
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionList", VPNCMD.VERTICAL)
 }
 
+VPNCMD.prototype.listUsers = function (options) {
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD UserList", VPNCMD.VERTICAL)
+}
+
+
+
 VPNCMD.prototype.getSession = function (options, sessionName) {
-    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionGet " + sessionName, "HORIZONTAL")
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD SessionGet " + sessionName, VPNCMD.HORIZONTAL)
 }
 
 VPNCMD.prototype.createUser = function(options, username, group) {
-    var command = this.getBasicCommand(options) + " /CMD UserCreate " + username + " /GROUP:" + group +
-        " /REALNAME:" + username +" /NOTE:\"\""
-    return exec(command)
+    let command = this.getBasicCommand(options) + " /CMD UserCreate " + username + " /GROUP:" + group
+    command += " /REALNAME:" + username +" /NOTE:\"\""
+    return executeCommand(command)
 }
 
-VPNCMD.prototype.setUserRadius = function(username, options) {
+VPNCMD.prototype.setUserRadius = function(options, username) {
     var command = this.getBasicCommand(options) + " /CMD UserRadiusSet " + username + " /ALIAS:" + username
-    return exec(command)
+    return executeCommand(command)
 }
 
-VPNCMD.prototype.disconnectSession = function(sessionName, options) {
-    return exec(this.getBasicCommand(options) + " /CMD SessionDisconnect " + sessionName)
+VPNCMD.prototype.setUserPolicy = function(options, username, policyName, value) {
+    if (_.isNil(username) || _.isNil(policyName) || _.isNil(value) || (! _.isNumber(value) && ! _.isBoolean(value) && ! _.isString(value))) {
+        throw new Error("setUserPolicy. username, polciy name and value must all be set. Value is either boolean or Number")
+    }
+    var command = this.getBasicCommand(options) + " /CMD UserPolicySet " + username + " /NAME:" + policyName +
+        " /VALUE:"
+    if (_.isBoolean(value)) {
+        command += value?"yes":"no"
+    } else if (_.isNumber(value) || _.isString(value)) {
+        command += value
+    }
+    return executeCommand(command)
+}
+
+VPNCMD.prototype.getUserPolicy = function(options, username, policyName) {
+    if (_.isNil(username) || _.isNil(policyName) || _.isNil(value) ) {
+        throw new Error("setUserPolicy. username, polciy name and value must all be set.")
+    }
+    var command = this.getBasicCommand(options) + " /CMD UserPolicySet " + username + " /NAME:" + policyName
+    return executeCommand(command)
+}
+
+VPNCMD.prototype.deleteUser = function(options, username) {
+    var command = this.getBasicCommand(options) + " /CMD UserDelete " + username
+    return executeCommand(command)
+}
+
+VPNCMD.prototype.getUser= function (options, username) {
+    return executeCommandCsv(this.getBasicCommand(options) + " /CSV /CMD UserGet " + username, VPNCMD.HORIZONTAL)
+}
+
+VPNCMD.prototype.disconnectSession = function(options, sessionName) {
+    return executeCommand(this.getBasicCommand(options) + " /CMD SessionDisconnect " + sessionName)
 }
 
 module.exports = VPNCMD

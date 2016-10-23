@@ -3,5 +3,7 @@
 node_modules/
 sandbox.js
 softether*.tgz
+*-compiled.js
+*-compiled.js.map
 
 
