@@ -1,6 +1,6 @@
 {
   "name": "softether",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Port of SoftEther vpncmd tool. Currently this code will just execute vpncmd commands in a child process using a nodejs wrapper",
   "main": "index.js",
   "scripts": {
